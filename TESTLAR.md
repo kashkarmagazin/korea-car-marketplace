@@ -4,7 +4,8 @@ Sana: 20.10.2026. Baza testlari **haqiqiy PostgreSQL 15** da (embedded-postgres)
 
 | To'plam | Buyruq | Natija |
 |---|---|---|
-| Baza (biznes qoidalari, xavfsizlik) | `npm run test:db` | **47 / 47 o'tdi** (3 marta ketma-ket barqaror) |
+| Baza (biznes qoidalari, xavfsizlik) | `npm run test:db` | **50 / 50 o'tdi** |
+| REAL Supabase (Seul, PG 17) — to'liq jarayon, ROLLBACK bilan | `node scripts/run-real-flow.mjs` | **12 / 12 o'tdi**, bazada test ma'lumoti qolmadi |
 | Kutubxona (taymer, pul, i18n, webhook imzosi) | `npm test` | **12 / 12 o'tdi** |
 | TypeScript | `npm run typecheck` | xatosiz |
 | Build | `npm run build` | muvaffaqiyatli |
@@ -36,10 +37,15 @@ Sana: 20.10.2026. Baza testlari **haqiqiy PostgreSQL 15** da (embedded-postgres)
 - Sotuv va auksion: bitta avtomobil ikkalasida bir vaqtda bo'lolmaydi (ikki parallel so'rovda ham).
 - Taymer: qurilma soati (`Date.now`) o'zgartirilsa ham qolgan vaqt o'zgarmaydi (monoton soat + server).
 
-## TAYYOR EMAS / hali ulanmagan (tayyor deb e'lon qilinmaydi)
-1. **Real to'lov provayderi yo'q.** `payment-webhook` sir sozlanmaguncha 503 qaytaradi — hech bir depozit "to'langan" bo'lmaydi. Provayder (masalan, mahalliy bank/PayBox/Stripe) tanlangach imzo formati moslanadi.
-2. **Bildirishnomalar** `notifications` jadvaliga yoziladi, lekin Telegram/SMS/email'ga **yuboruvchi servis yozilmagan**.
-3. **Supabase loyihasi yaratilmagan** — interfeys real backend bilan sinalmagan (faqat soxta manzil bilan chizilishi tekshirildi). Real loyihada: migratsiyalarni qo'llash, `pg_cron` yoqish (aks holda `finalize_due_auctions()` ni tashqi cron chaqirishi kerak), Realtime, Auth (email), `kyc` bucket.
-4. **Interfeysning end-to-end testi** (brauzer + real backend) yo'q.
-5. **Depozitni ushlab qolish/qaytarish siyosati** — huquqiy tekshiruvgacha faqat qo'lda (admin, sababi bilan).
-6. Rasm yuklash — hozircha rasm **havolasi** kiritiladi (Storage'ga avtomobil rasmini yuklash UI'si yo'q).
+## To'lov modeli (20.10 qaror)
+To'lov sayt orqali EMAS: bank o'tkazmasi yoki sotuvchi–xaridor kelishuvi. Kelishuv bosqichida g'olib/xaridor va sotuvchi bir-birining ism va telefonini ko'radi (begonalar ko'rmaydi); sotuvchi pulni olgach to'lov usulini (bank / kelishuv) ko'rsatib yakunlaydi — jurnalga yoziladi. Stavka, taklif va e'lon uchun profilda ism + telefon majburiy. Depozit o'chiq (deposit_required=false); webhook provayder sozlanmaguncha 503.
+
+## Supabase (20.10)
+Loyiha `korea-car-marketplace` (ref uflntqsrxxzlnqpscclx, ap-northeast-2 Seul), 6 migratsiya qo'llangan; pg_cron (har daqiqa yakunlash, har 5 daqiqa g'olib sukuti), Realtime (auctions, listings), yopiq `kyc` bucket. Admin: clubtimo99@gmail.com. Sirlar faqat `~/.supabase/` da.
+
+## TAYYOR EMAS
+1. **Sayt internetga chiqarilmagan** — ochiq GitHub Pages yaratish uchun egasining aniq ruxsati kerak. Build tayyor: `kashkar-ish/korea-car-pages`.
+2. **Bildirishnomalar** navbatga yoziladi, Telegram/SMS/email yuboruvchi yo'q.
+3. **Email kirish**: Supabase standart pochtasi soatiga bir necha xat bilan cheklangan — ko'p foydalanuvchi uchun o'z SMTP kerak.
+4. **Brauzer + real backend end-to-end testi** yo'q (real backend SQL darajasida sinaldi).
+5. Avtomobil rasmini yuklash UI yo'q (havola kiritiladi).
