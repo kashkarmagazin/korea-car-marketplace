@@ -5,6 +5,8 @@ import { errorText, LOCALE, t, type UiKey } from "../lib/i18n";
 import { formatMinor, formatUsd, parseUsdToCents } from "../lib/money";
 import { formatLocal } from "../lib/time";
 import { Countdown } from "../components/Countdown";
+import { Deal } from "../components/Deal";
+import { Profile } from "../components/Profile";
 
 export type AuctionRow = {
   auction_id: string; listing_status: string; make: string; model: string; year: number | null; mileage_km: number | null;
@@ -61,7 +63,7 @@ export function SellerBadge({ v }: { v: string }) {
 }
 
 export function AuctionDetail({ id, onBack }: { id: string; onBack: () => void }) {
-  const { sb, lang, session } = useApp();
+  const { sb, lang, session, profile } = useApp();
   const [a, setA] = useState<AuctionRow | null>(null);
   const [bids, setBids] = useState<BidRow[]>([]);
   const [s, setS] = useState<Settings | null>(null);
@@ -150,6 +152,7 @@ export function AuctionDetail({ id, onBack }: { id: string; onBack: () => void }
             </div>
           )}
 
+          {active && session && !a.i_am_seller && profile && (!profile.full_name || !profile.phone) && <Profile />}
           {active && session && !a.i_am_seller && (
             <div className="bidbox">
               {a.i_am_highest && <p className="ok">{t(lang, "youAreHighest")}</p>}
@@ -184,8 +187,7 @@ export function AuctionDetail({ id, onBack }: { id: string; onBack: () => void }
 }
 
 function ResultBanner({ a, onDone }: { a: AuctionRow; onDone: () => void }) {
-  const { sb, lang } = useApp();
-  const [err, setErr] = useState("");
+  const { lang } = useApp();
   const map: Record<string, UiKey> = {
     reserve_met: "resultPending", reserve_not_met: "resultNoSale", no_bids: "resultNoSale",
     winner_defaulted: "resultNoSale", completed: "resultSold", cancelled: "resultCancelled",
@@ -194,12 +196,9 @@ function ResultBanner({ a, onDone }: { a: AuctionRow; onDone: () => void }) {
     <div className="notice">
       <b>{a.i_am_winner && a.result === "reserve_met" ? t(lang, "resultWon") : t(lang, map[a.result!] ?? "ended")}</b>
       {a.result === "reserve_met" && a.winner_deadline && <span> {formatLocal(a.winner_deadline, LOCALE[lang])}</span>}
-      {a.result === "reserve_met" && a.i_am_seller && (
-        <button onClick={() => call(sb, "complete_auction_sale", { p_auction: a.auction_id }).then(onDone).catch((e) => setErr(errorText(lang, e)))}>
-          {t(lang, "completeSale")}
-        </button>
+      {a.result === "reserve_met" && (a.i_am_seller || a.i_am_winner) && (
+        <Deal listingId={a.auction_id} isSeller={!!a.i_am_seller} completeFn="complete_auction_sale" onDone={onDone} />
       )}
-      {err && <p className="err">{err}</p>}
     </div>
   );
 }

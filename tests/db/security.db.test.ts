@@ -195,7 +195,7 @@ describe("Oddiy sotuv va auksion bir-biridan ajratilgan", () => {
     const o = await rpc(p, b1, "make_offer", l, 1400000, "Naqd to'layman");
     await rpc(p, seller, "respond_offer", o, true);
     expect(await expectKc(rpc(p, b2, "start_purchase", l))).toBe("listing_not_active");
-    await rpc(p, seller, "complete_sale", l);
+    await rpc(p, seller, "complete_sale", l, "agreed");
     const s = (await p.query("select l.status ls, c.status cs from public.listings l join public.cars c on c.id=l.car_id where l.id=$1", [l])).rows[0];
     expect(s).toEqual({ ls: "sold", cs: "sold" });
 
@@ -225,5 +225,43 @@ describe("Shaxsni tekshirish", () => {
     expect((await bid(u, id, 10000)).high_usd_cents).toBe(10000);
     const log = (await p.query("select actor from public.audit_log where action='admin_verification_decided' and entity_id=$1", [u])).rows;
     expect(log).toEqual([{ actor: admin }]);
+  });
+});
+
+describe("To'lov sayt orqali emas: bank yoki kelishuv", () => {
+  it("profilda ism/telefon bo'lmasa stavka, taklif va e'lon yo'q; update_my_profile telefonni tekshiradi", async () => {
+    const u = await createUser(p, { noContact: true });
+    const { id } = await createAuction(p, seller);
+    expect(await expectKc(bid(u, id, 10000))).toBe("profile_incomplete");
+    expect(await expectKc(rpc(p, u, "update_my_profile", "Ali", "abc"))).toBe("invalid_phone");
+    await rpc(p, u, "update_my_profile", "Ali Valiyev", "+996 555 123 456");
+    expect((await bid(u, id, 10000)).high_usd_cents).toBe(10000);
+  });
+
+  it("kelishuv bosqichida faqat g'olib va sotuvchi bir-birining kontaktini ko'radi", async () => {
+    await p.query("update public.profiles set full_name='Sotuvchi S', phone='+996 700 111 222' where id=$1", [seller]);
+    await p.query("update public.profiles set full_name='Xaridor X', phone='+996 700 333 444' where id=$1", [b1]);
+    const { id } = await createAuction(p, seller);
+    await bid(b1, id, 10000);
+    expect(await expectKc(rpc(p, b1, "deal_contacts", id))).toBe("no_deal");           // auksion hali tugamagan
+    await p.query("update public.auctions set starts_at = clock_timestamp() - interval '73 hours', ends_at = clock_timestamp() - interval '1 second' where listing_id=$1", [id]);
+    await rpc(p, b2, "finalize_auction_if_due", id);
+    const asWinner = await asUser(p, b1, async (c) => (await c.query("select * from public.deal_contacts($1)", [id])).rows);
+    expect(asWinner).toEqual([{ role: "seller", full_name: "Sotuvchi S", phone: "+996 700 111 222" }]);
+    const asSeller = await asUser(p, seller, async (c) => (await c.query("select * from public.deal_contacts($1)", [id])).rows);
+    expect(asSeller).toEqual([{ role: "buyer", full_name: "Xaridor X", phone: "+996 700 333 444" }]);
+    await expect(asUser(p, b2, (c) => c.query("select * from public.deal_contacts($1)", [id]))).rejects.toThrow(/KC:forbidden/);
+    // to'lov usulisiz yakunlab bo'lmaydi; usul jurnalga yoziladi
+    expect(await expectKc(rpc(p, seller, "complete_auction_sale", id, null))).toBe("payment_method_required");
+    expect(await expectKc(rpc(p, seller, "complete_auction_sale", id, "card_online"))).toBe("payment_method_required");
+    expect(await expectKc(rpc(p, b1, "complete_auction_sale", id, "bank_transfer"))).toBe("forbidden");   // g'olib o'zi yakunlay olmaydi
+    await rpc(p, seller, "complete_auction_sale", id, "bank_transfer");
+    const log = (await p.query("select data->>'payment_method' m from public.audit_log where action='auction_sale_completed' and entity_id=$1", [id])).rows;
+    expect(log).toEqual([{ m: "bank_transfer" }]);
+  });
+
+  it("ichki _core_ funksiyalarni chetlab chaqirib bo'lmaydi", async () => {
+    const { id } = await createAuction(p, seller);
+    await expect(asUser(p, b1, (c) => c.query("select public._core_place_bid($1, 10000)", [id]))).rejects.toThrow(/permission denied/);
   });
 });

@@ -4,6 +4,7 @@ import { call } from "../lib/supabase";
 import { errorText, t, type UiKey } from "../lib/i18n";
 import { formatMinor, parseToMinor } from "../lib/money";
 import { SellerBadge } from "./Auctions";
+import { Deal } from "../components/Deal";
 
 type SaleRow = {
   listing_id: string; listing_status: string; make: string; model: string; year: number | null; mileage_km: number | null;
@@ -101,10 +102,13 @@ function SaleDetail({ s, onBack }: { s: SaleRow; onBack: () => void }) {
               )}
             </div>
           ))}
-          {offers.some((o) => o.status === "accepted") && (
-            <button className="primary" onClick={() => run("complete_sale", { p_listing: s.listing_id })}>{t(lang, "completeSale")}</button>
+          {s.listing_status === "pending_completion" && (
+            <Deal listingId={s.listing_id} isSeller completeFn="complete_sale" onDone={onBack} />
           )}
         </>
+      )}
+      {!s.i_am_seller && s.listing_status === "pending_completion" && offers.some((o) => o.status === "accepted") && (
+        <Deal listingId={s.listing_id} isSeller={false} completeFn="complete_sale" onDone={onBack} />
       )}
       {msg && <p className={msg.ok ? "ok" : "err"}>{msg.text}</p>}
     </section>

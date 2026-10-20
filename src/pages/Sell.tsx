@@ -4,6 +4,7 @@ import { call } from "../lib/supabase";
 import { errorText, t, type UiKey } from "../lib/i18n";
 import { MINOR_UNITS, parseToMinor, parseUsdToCents } from "../lib/money";
 import { Verify } from "../components/Verify";
+import { Profile } from "../components/Profile";
 
 const DAMAGE = ["none", "minor", "moderate", "severe", "flood", "unknown"] as const;
 
@@ -45,6 +46,7 @@ export function Sell() {
 
   return (
     <section className="form">
+      <Profile />
       <Verify />
       <label>{t(lang, "make")}<input value={f.make} onChange={set("make")} /></label>
       <label>{t(lang, "model")}<input value={f.model} onChange={set("model")} /></label>

@@ -204,7 +204,7 @@ describe("6. Rezerv narx bajarilmasligi", () => {
       "select a.result, a.winner_id, l.status ls, c.status cs from public.auctions a join public.listings l on l.id=a.listing_id join public.cars c on c.id=l.car_id where a.listing_id=$1", [id])).rows[0];
     expect(row).toMatchObject({ result: "reserve_not_met", winner_id: null, ls: "ended_no_sale", cs: "draft" });
     expect(car).toBeTruthy();
-    expect(await expectKc(rpc(p, seller, "complete_auction_sale", id))).toBe("no_pending_winner");
+    expect(await expectKc(rpc(p, seller, "complete_auction_sale", id, "bank_transfer"))).toBe("no_pending_winner");
   });
 
   it("rezerv aynan bajarilsa — shartli g'olib", async () => {
@@ -229,7 +229,7 @@ describe("7. G'olib xaridni yakunlamasligi", () => {
 
   it("manual qoida: muddat o'tdi -> winner_defaulted, avtomobil sotilmagan, qayta qo'yilmaydi", async () => {
     const { id, car } = await wonAuction();
-    expect(await expectKc(rpc(p, seller, "complete_auction_sale", id))).toBe("winner_deadline_passed");
+    expect(await expectKc(rpc(p, seller, "complete_auction_sale", id, "bank_transfer"))).toBe("winner_deadline_passed");
     await asService(p, (c) => c.query("select public.process_winner_defaults()"));
     const a = (await p.query("select result from public.auctions where listing_id=$1", [id])).rows[0];
     expect(a.result).toBe("winner_defaulted");
@@ -263,7 +263,7 @@ describe("7. G'olib xaridni yakunlamasligi", () => {
     await bid(b1, id, 10000);
     await setEndsAt(p, id, "clock_timestamp() - interval '1 second'");
     await rpc(p, b2, "finalize_auction_if_due", id);
-    await rpc(p, seller, "complete_auction_sale", id);
+    await rpc(p, seller, "complete_auction_sale", id, "bank_transfer");
     expect((await p.query("select status from public.cars where id=$1", [car])).rows[0].status).toBe("sold");
   });
 });

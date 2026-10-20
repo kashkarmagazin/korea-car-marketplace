@@ -4,7 +4,7 @@ import { supabase, syncServerClock } from "./supabase";
 import type { Lang } from "./i18n";
 import type { ServerClock } from "./time";
 
-type Profile = { id: string; role: "user" | "admin"; verification: string; lang: Lang; blocked: boolean };
+type Profile = { id: string; role: "user" | "admin"; verification: string; lang: Lang; blocked: boolean; full_name: string | null; phone: string | null };
 type Ctx = {
   sb: SupabaseClient;
   session: Session | null;
@@ -12,6 +12,7 @@ type Ctx = {
   lang: Lang;
   setLang: (l: Lang) => void;
   clock: ServerClock | null;
+  reloadProfile: () => void;
 };
 const C = createContext<Ctx | null>(null);
 export const useApp = () => {
@@ -32,11 +33,13 @@ export function AppProvider({ sb, children }: { sb: SupabaseClient; children: Re
     return () => data.subscription.unsubscribe();
   }, [sb]);
 
+  const [profileTick, setProfileTick] = useState(0);
   useEffect(() => {
     if (!session) return setProfile(null);
-    sb.from("profiles").select("id, role, verification, lang, blocked").eq("id", session.user.id).single()
+    sb.from("profiles").select("id, role, verification, lang, blocked, full_name, phone").eq("id", session.user.id).single()
       .then(({ data }) => setProfile(data as Profile | null));
-  }, [sb, session]);
+  }, [sb, session, profileTick]);
+  const reloadProfile = () => setProfileTick((n) => n + 1);
 
   // Server soati har 60 s qayta sinxronlanadi (internet uzilsa — oxirgi bog'lanish ishlatiladi)
   useEffect(() => {
@@ -53,7 +56,7 @@ export function AppProvider({ sb, children }: { sb: SupabaseClient; children: Re
     if (session) sb.from("profiles").update({ lang: l }).eq("id", session.user.id).then(() => undefined);
   };
 
-  return <C.Provider value={{ sb, session, profile, lang, setLang, clock }}>{children}</C.Provider>;
+  return <C.Provider value={{ sb, session, profile, lang, setLang, clock, reloadProfile }}>{children}</C.Provider>;
 }
 
 export const supabaseClient = supabase;

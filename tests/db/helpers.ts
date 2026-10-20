@@ -39,15 +39,17 @@ export const pool = (db?: string, max = 30) => {
 /** auth.users ga foydalanuvchi qo'shadi (trigger profil yaratadi). */
 export async function createUser(
   p: pg.Pool,
-  opts: { admin?: boolean; verified?: boolean; blocked?: boolean } = {},
+  opts: { admin?: boolean; verified?: boolean; blocked?: boolean; noContact?: boolean } = {},
 ): Promise<string> {
   const id = randomUUID();
   await p.query("insert into auth.users (id, email) values ($1, $2)", [id, `${id.slice(0, 8)}@test.local`]);
-  await p.query("update public.profiles set role = $2, verification = $3, blocked = $4 where id = $1", [
+  await p.query("update public.profiles set role = $2, verification = $3, blocked = $4, full_name = $5, phone = $6 where id = $1", [
     id,
     opts.admin ? "admin" : "user",
     opts.verified === false ? "unverified" : "verified",
     opts.blocked ?? false,
+    opts.noContact ? null : "Test Foydalanuvchi",
+    opts.noContact ? null : "+996 550 000 000",
   ]);
   return id;
 }
