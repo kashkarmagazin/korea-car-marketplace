@@ -70,3 +70,16 @@ describe("uch tilli matnlar", () => {
     expect(errorText("ky", { message: "boshqa" })).toBe("Ката кетти");
   });
 });
+
+describe("bildirishnoma turlari", () => {
+  it("serverdagi har bir _notify turi uch tilda bor", async () => {
+    const { NOTIFY, AUTH } = await import("./i18n");
+    const dir = join(__dirname, "..", "..", "supabase", "migrations");
+    const sql = readdirSync(dir).map((f) => readFileSync(join(dir, f), "utf8")).join("\n");
+    const kinds = new Set<string>();
+    for (const m of sql.matchAll(/_notify\([^,]+,\s*(?:case when [^']+ then )?'([a-z_]+)'(?: else '([a-z_]+)')?/g)) { kinds.add(m[1]); if (m[2]) kinds.add(m[2]); }
+    expect(kinds.size).toBeGreaterThanOrEqual(15);
+    for (const k of kinds) for (const l of LANGS) expect(NOTIFY[k]?.[l], `${k}.${l}`).toBeTruthy();
+    for (const [k, v] of Object.entries(AUTH)) for (const l of LANGS) expect(v[l], `${k}.${l}`).toBeTruthy();
+  });
+});

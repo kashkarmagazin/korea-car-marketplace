@@ -265,3 +265,20 @@ describe("To'lov sayt orqali emas: bank yoki kelishuv", () => {
     await expect(asUser(p, b1, (c) => c.query("select public._core_place_bid($1, 10000)", [id]))).rejects.toThrow(/permission denied/);
   });
 });
+
+describe("Rasm havolalari va bildirishnomalar", () => {
+  it("faqat https rasm havolasi; 12 tadan ko'p emas", async () => {
+    await expect(asUser(p, seller, (c) => c.query("insert into public.cars (seller_id, make, model, photos) values ($1,'Kia','Ray','{javascript:alert(1)}')", [seller]))).rejects.toThrow(/cars_photos_https/);
+    await expect(asUser(p, seller, (c) => c.query("insert into public.cars (seller_id, make, model, photos) values ($1,'Kia','Ray',$2)", [seller, Array(13).fill("https://x.y/a.jpg")]))).rejects.toThrow(/cars_photos_count/);
+  });
+  it("foydalanuvchi faqat o'z bildirishnomalarini ko'radi va o'qilgan qiladi", async () => {
+    const { id } = await createAuction(p, seller);
+    await bid(b1, id, 10000);
+    await bid(b2, id, 20000);                                  // b1 ga "outbid"
+    const mine = await asUser(p, b1, async (c) => (await c.query("select kind from public.notifications")).rows);
+    expect(mine).toEqual([{ kind: "outbid" }]);
+    expect(await rpc(p, b1, "mark_notifications_read")).toBe(1);
+    const other = await asUser(p, b2, async (c) => (await c.query("select count(*)::int n from public.notifications")).rows[0].n);
+    expect(other).toBe(0);
+  });
+});

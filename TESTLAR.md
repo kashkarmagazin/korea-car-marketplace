@@ -4,9 +4,10 @@ Sana: 20.10.2026. Baza testlari **haqiqiy PostgreSQL 15** da (embedded-postgres)
 
 | To'plam | Buyruq | Natija |
 |---|---|---|
-| Baza (biznes qoidalari, xavfsizlik) | `npm run test:db` | **50 / 50 o'tdi** |
+| Baza (biznes qoidalari, xavfsizlik) | `npm run test:db` | **52 / 52 o'tdi** |
+| Brauzer (Edge) + REAL Supabase: joylash, rasm, stavkalar, xatolar, bildirishnoma, 3 til, admin jurnali | `node scripts/e2e-real.mjs` | **16 / 16 o'tdi** (oxirgi ishga tushirish), JS xatosi yo'q |
 | REAL Supabase (Seul, PG 17) — to'liq jarayon, ROLLBACK bilan | `node scripts/run-real-flow.mjs` | **12 / 12 o'tdi**, bazada test ma'lumoti qolmadi |
-| Kutubxona (taymer, pul, i18n, webhook imzosi) | `npm test` | **12 / 12 o'tdi** |
+| Kutubxona (taymer, pul, i18n, bildirishnoma turlari, webhook imzosi) | `npm test` | **13 / 13 o'tdi** |
 | TypeScript | `npm run typecheck` | xatosiz |
 | Build | `npm run build` | muvaffaqiyatli |
 | Brauzer tutun testi (Edge, headless) | — | sahifa chiziladi, uz/ru/ky almashadi, JS xatosi yo'q |
@@ -43,9 +44,14 @@ To'lov sayt orqali EMAS: bank o'tkazmasi yoki sotuvchi–xaridor kelishuvi. Keli
 ## Supabase (20.10)
 Loyiha `korea-car-marketplace` (ref uflntqsrxxzlnqpscclx, ap-northeast-2 Seul), 6 migratsiya qo'llangan; pg_cron (har daqiqa yakunlash, har 5 daqiqa g'olib sukuti), Realtime (auctions, listings), yopiq `kyc` bucket. Admin: clubtimo99@gmail.com. Sirlar faqat `~/.supabase/` da.
 
+## Sinov rejimi (20.10)
+- Ilova kompyuterda ishlaydi: `ishga-tushir.cmd` (ish stolida "Korea Car (sinov)") → http://localhost:4320, telefon shu Wi‑Fi da: http://192.168.1.141:4320.
+- Kirish: email + parol (email tasdig'i o'chiq — sinov uchun; stavka uchun baribir admin tasdig'i kerak). Hisoblar: `~/.supabase/korea-car-test-accounts.txt` (admin + 2 test xaridor).
+- Avtomobil rasmlari Storage'ga yuklanadi (`car-photos`, faqat https, 12 tagacha, 8 MB).
+- Bildirishnomalar ilova ichida (🔔, Realtime).
+- E2E sinovlarida yaratilgan 3 auksion admin tomonidan bekor qilingan (jurnalda bor).
+
 ## TAYYOR EMAS
-1. **Sayt internetga chiqarilmagan** — ochiq GitHub Pages yaratish uchun egasining aniq ruxsati kerak. Build tayyor: `kashkar-ish/korea-car-pages`.
-2. **Bildirishnomalar** navbatga yoziladi, Telegram/SMS/email yuboruvchi yo'q.
-3. **Email kirish**: Supabase standart pochtasi soatiga bir necha xat bilan cheklangan — ko'p foydalanuvchi uchun o'z SMTP kerak.
-4. **Brauzer + real backend end-to-end testi** yo'q (real backend SQL darajasida sinaldi).
-5. Avtomobil rasmini yuklash UI yo'q (havola kiritiladi).
+1. **Ommaga ochiq sayt** — egasi sinab bo'lgach ruxsat bersa (GitHub Pages, sozlamalar tayyor).
+2. **Tashqi bildirishnoma** (Telegram/SMS/email) — faqat ilova ichida.
+3. Ommaga ochishdan oldin: email tasdig'ini qayta yoqish va o'z SMTP ulash tavsiya etiladi.

@@ -24,6 +24,7 @@
     "@vitejs/plugin-react": "^4.3.3",
     "embedded-postgres": "^15.18.0-beta.17",
     "pg": "^8.13.0",
+    "playwright-core": "^1.64.1",
     "typescript": "~5.6.3",
     "vite": "^5.4.10",
     "vitest": "^2.1.4"

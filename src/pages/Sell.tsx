@@ -5,16 +5,17 @@ import { errorText, t, type UiKey } from "../lib/i18n";
 import { MINOR_UNITS, parseToMinor, parseUsdToCents } from "../lib/money";
 import { Verify } from "../components/Verify";
 import { Profile } from "../components/Profile";
+import { PhotoUpload } from "../components/PhotoUpload";
 
 const DAMAGE = ["none", "minor", "moderate", "severe", "flood", "unknown"] as const;
 
 /** Avtomobil qo'shish: belgilangan narxda sotuv YOKI 72 soatlik auksion (bir vaqtda faqat bittasi). */
 export function Sell() {
   const { sb, lang, session } = useApp();
-  const [f, setF] = useState({ make: "", model: "", year: "", mileage: "", damage: "unknown", notes: "", currency: "USD", photo: "",
+  const [f, setF] = useState({ make: "", model: "", year: "", mileage: "", damage: "unknown", notes: "", currency: "USD", photos: [] as string[],
     mode: "auction" as "auction" | "sale", price: "", negotiable: true, start: "100", reserve: "" });
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
-  const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
+  const set = (k: Exclude<keyof typeof f, "photos">) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
 
   if (!session) return <p>{errorText(lang, { message: "KC:auth_required" })}</p>;
 
@@ -24,7 +25,7 @@ export function Sell() {
       const { data: car, error } = await sb.from("cars").insert({
         seller_id: session!.user.id, make: f.make, model: f.model, year: f.year ? Number(f.year) : null,
         mileage_km: f.mileage ? Number(f.mileage) : null, damage: f.damage, damage_notes: f.notes || null,
-        currency: f.currency, photos: f.photo ? [f.photo] : [],
+        currency: f.currency, photos: f.photos,
       }).select("id").single();
       if (error) throw error;
       if (f.mode === "sale") {
@@ -56,7 +57,7 @@ export function Sell() {
         <select value={f.damage} onChange={set("damage")}>{DAMAGE.map((d) => <option key={d} value={d}>{t(lang, `damage_${d}` as UiKey)}</option>)}</select>
       </label>
       <label>{t(lang, "damage")} ({t(lang, "message")})<textarea value={f.notes} onChange={set("notes")} /></label>
-      <label>{t(lang, "photoUrl")}<input value={f.photo} onChange={set("photo")} /></label>
+      <PhotoUpload value={f.photos} onChange={(photos) => setF({ ...f, photos })} />
       <label>{t(lang, "currency")}
         <select value={f.currency} onChange={set("currency")}>{Object.keys(MINOR_UNITS).map((c) => <option key={c}>{c}</option>)}</select>
       </label>

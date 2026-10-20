@@ -6,6 +6,8 @@ import { AuctionDetail, AuctionList } from "./pages/Auctions";
 import { SaleList } from "./pages/Sales";
 import { Sell } from "./pages/Sell";
 import { Admin } from "./pages/Admin";
+import { Auth } from "./components/Auth";
+import { Notifications } from "./components/Notifications";
 
 type Tab = "auctions" | "sales" | "sell" | "admin";
 
@@ -13,8 +15,6 @@ function Shell() {
   const { sb, lang, setLang, session, profile } = useApp();
   const [tab, setTab] = useState<Tab>("auctions");
   const [auction, setAuction] = useState<string | null>(null);
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
 
   return (
     <div className="app">
@@ -30,15 +30,8 @@ function Shell() {
         <select value={lang} onChange={(e) => setLang(e.target.value as Lang)} aria-label="lang">
           {LANGS.map((l) => <option key={l} value={l}>{l.toUpperCase()}</option>)}
         </select>
-        {session ? (
-          <button onClick={() => sb.auth.signOut()}>{t(lang, "signOut")}</button>
-        ) : (
-          <form onSubmit={async (e) => { e.preventDefault(); const { error } = await sb.auth.signInWithOtp({ email }); setSent(!error); }}>
-            <input type="email" required placeholder={t(lang, "email")} value={email} onChange={(e) => setEmail(e.target.value)} />
-            <button>{t(lang, "sendLink")}</button>
-            {sent && <span className="ok"> {t(lang, "linkSent")}</span>}
-          </form>
-        )}
+        <Notifications onOpenAuction={(id) => { setTab("auctions"); setAuction(id); }} />
+        {session ? <button onClick={() => sb.auth.signOut()}>{t(lang, "signOut")}</button> : <Auth />}
       </header>
       <main>
         {tab === "auctions" && (auction

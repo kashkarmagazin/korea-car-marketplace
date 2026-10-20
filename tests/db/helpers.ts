@@ -100,7 +100,7 @@ export const rpc = async (p: pg.Pool, uid: string | null, fn: string, ...args: u
 export async function createCar(p: pg.Pool, seller: string, currency = "USD"): Promise<string> {
   return asUser(p, seller, async (c) =>
     (await c.query(
-      "insert into public.cars (seller_id, make, model, year, damage, currency, photos) values ($1, 'Hyundai', 'Sonata', 2019, 'minor', $2, '{a.jpg}') returning id",
+      "insert into public.cars (seller_id, make, model, year, damage, currency, photos) values ($1, 'Hyundai', 'Sonata', 2019, 'minor', $2, '{https://example.com/a.jpg}') returning id",
       [seller, currency],
     )).rows[0].id,
   );

@@ -193,3 +193,36 @@ export function errorText(lang: Lang, e: unknown): string {
   if (m && ERRORS[m[1]]) return ERRORS[m[1]][lang];
   return unknownError[lang];
 }
+
+// Bildirishnoma turlari (server _notify(...) kodlari — testda hammasi borligi tekshiriladi)
+export const NOTIFY: Record<string, Record<Lang, string>> = {
+  outbid: { uz: "Stavkangizdan oshib ketishdi", ru: "Вашу ставку перебили", ky: "Сиздин коюмуңуздан ашып кетишти" },
+  auction_won: { uz: "Tabriklaymiz! Auksionda yutdingiz — sotuvchi bilan bog'laning", ru: "Поздравляем! Вы выиграли аукцион — свяжитесь с продавцом", ky: "Куттуктайбыз! Аукциондо уттуңуз — сатуучу менен байланышыңыз" },
+  auction_sold_pending: { uz: "Auksioningiz g'olib bilan yakunlandi — xaridor bilan bog'laning", ru: "Ваш аукцион завершён с победителем — свяжитесь с покупателем", ky: "Аукционуңуз жеңүүчү менен аяктады — сатып алуучу менен байланышыңыз" },
+  auction_no_sale: { uz: "Auksioningiz sotuvsiz tugadi", ru: "Ваш аукцион завершён без продажи", ky: "Аукционуңуз сатуусуз аяктады" },
+  auction_reserve_not_met: { uz: "Auksion tugadi: rezerv narx bajarilmadi", ru: "Аукцион завершён: резерв не достигнут", ky: "Аукцион аяктады: резервдик баа аткарылган жок" },
+  auction_cancelled: { uz: "Auksion admin tomonidan bekor qilindi", ru: "Аукцион отменён администратором", ky: "Аукцион админ тарабынан жокко чыгарылды" },
+  auction_relisted: { uz: "Avtomobilingiz qayta auksionga qo'yildi", ru: "Ваш автомобиль снова выставлен на аукцион", ky: "Унааңыз кайра аукционго коюлду" },
+  winner_defaulted: { uz: "Yakunlash muddati o'tdi — g'oliblik bekor qilindi", ru: "Срок завершения истёк — победа аннулирована", ky: "Аяктоо мөөнөтү өттү — жеңиш жокко чыгарылды" },
+  winner_defaulted_manual: { uz: "G'olib xaridni yakunlamadi — avtomobil yana sizda", ru: "Победитель не завершил покупку — автомобиль снова у вас", ky: "Жеңүүчү сатып алууну аяктаган жок — унаа кайра сизде" },
+  runner_up_offer: { uz: "Sizga avtomobilni stavkangiz narxida sotib olish taklif qilindi", ru: "Вам предложено купить автомобиль по вашей ставке", ky: "Сизге унааны коюмуңуздун баасында сатып алуу сунушталды" },
+  purchase_completed: { uz: "Xarid yakunlandi", ru: "Покупка завершена", ky: "Сатып алуу аяктады" },
+  purchase_requested: { uz: "Xaridor sotib olishni boshladi", ru: "Покупатель начал покупку", ky: "Сатып алуучу сатып алууну баштады" },
+  offer_received: { uz: "Yangi narx taklifi", ru: "Новое предложение цены", ky: "Жаңы баа сунушу" },
+  offer_accepted: { uz: "Taklifingiz qabul qilindi — sotuvchi bilan bog'laning", ru: "Ваше предложение принято — свяжитесь с продавцом", ky: "Сунушуңуз кабыл алынды — сатуучу менен байланышыңыз" },
+  offer_rejected: { uz: "Taklifingiz rad etildi", ru: "Ваше предложение отклонено", ky: "Сунушуңуз четке кагылды" },
+  verification_approved: { uz: "Shaxsingiz tasdiqlandi", ru: "Личность подтверждена", ky: "Инсандыгыңыз тастыкталды" },
+  verification_rejected: { uz: "Shaxsni tasdiqlash rad etildi", ru: "Проверка личности отклонена", ky: "Инсандыкты текшерүү четке кагылды" },
+};
+
+export const AUTH: Record<string, Record<Lang, string>> = {
+  password: { uz: "Parol (kamida 8 belgi)", ru: "Пароль (минимум 8 символов)", ky: "Сырсөз (кеминде 8 белги)" },
+  signUp: { uz: "Ro'yxatdan o'tish", ru: "Регистрация", ky: "Катталуу" },
+  haveAccount: { uz: "Hisobim bor — kirish", ru: "Есть аккаунт — войти", ky: "Аккаунтум бар — кирүү" },
+  noAccount: { uz: "Hisob yo'q — ro'yxatdan o'tish", ru: "Нет аккаунта — регистрация", ky: "Аккаунт жок — катталуу" },
+  badLogin: { uz: "Email yoki parol noto'g'ri", ru: "Неверный email или пароль", ky: "Email же сырсөз туура эмес" },
+  notifications: { uz: "Bildirishnomalar", ru: "Уведомления", ky: "Билдирмелер" },
+  markRead: { uz: "Hammasini o'qildi deb belgilash", ru: "Отметить все как прочитанные", ky: "Баарын окулду деп белгилөө" },
+  photos: { uz: "Rasmlar (12 tagacha, JPG/PNG/WebP, 8 MB gacha)", ru: "Фото (до 12, JPG/PNG/WebP, до 8 МБ)", ky: "Сүрөттөр (12ге чейин, JPG/PNG/WebP, 8 МБ чейин)" },
+  uploading: { uz: "Rasmlar yuklanmoqda…", ru: "Загрузка фото…", ky: "Сүрөттөр жүктөлүүдө…" },
+};
