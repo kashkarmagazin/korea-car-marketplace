@@ -41,7 +41,7 @@ export function AuctionCard({ a, onOpen }: { a: AuctionRow; onOpen: () => void }
   const { lang } = useApp();
   return (
     <article className="card" onClick={onOpen}>
-      <img src={a.photos[0] || "/placeholder.svg"} alt={`${a.make} ${a.model}`} />
+      <img src={a.photos[0] || `${import.meta.env.BASE_URL}placeholder.svg`} alt={`${a.make} ${a.model}`} />
       <div className="card-body">
         <h3>{a.make} {a.model} {a.year ?? ""}</h3>
         <div className="row"><span className="muted">{t(lang, "currentBid")}</span><b>{formatUsd(a.high_usd_cents ?? null)}</b></div>

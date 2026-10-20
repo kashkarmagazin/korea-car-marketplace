@@ -29,7 +29,7 @@ export function SaleList() {
     <div className="grid">
       {rows.map((s) => (
         <article key={s.listing_id} className="card" onClick={() => setOpen(s)}>
-          <img src={s.photos[0] || "/placeholder.svg"} alt={`${s.make} ${s.model}`} />
+          <img src={s.photos[0] || `${import.meta.env.BASE_URL}placeholder.svg`} alt={`${s.make} ${s.model}`} />
           <div className="card-body">
             <h3>{s.make} {s.model} {s.year ?? ""}</h3>
             <div className="row"><span className="muted">{t(lang, "price")}</span><b>{formatMinor(s.price_minor, s.currency)}</b></div>
