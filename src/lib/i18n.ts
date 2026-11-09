@@ -4,7 +4,7 @@ export const LANGS: Lang[] = ["uz", "ru", "ky"];
 export const LOCALE: Record<Lang, string> = { uz: "uz-UZ", ru: "ru-RU", ky: "ky-KG" };
 
 const ui = {
-  appTitle: { uz: "Korea Car Marketplace", ru: "Korea Car Marketplace", ky: "Korea Car Marketplace" },
+  appTitle: { uz: "AUTO KG", ru: "AUTO KG", ky: "AUTO KG" },
   tabAuctions: { uz: "Auksion", ru: "Аукцион", ky: "Аукцион" },
   tabSales: { uz: "Sotuv", ru: "Продажа", ky: "Сатуу" },
   tabSell: { uz: "Avtomobil joylash", ru: "Разместить авто", ky: "Унаа жайгаштыруу" },
